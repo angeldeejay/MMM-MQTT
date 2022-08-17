@@ -37,12 +37,12 @@ Module.register("MMM-MQTT", {
 
       // Create initialized objects for each topic of each subscription the broker.
       mqttBroker.subscriptions.map((subscription) => {
-        this.fetchedData.push({
+        let fetchedData = {
           broker: broker.url,
           topic: subscription.topic,
           label: subscription.label || "",
           suffix: subscription.suffix || "",
-          value: "UNDEFINED",
+          value: null,
           time: Date.now(),
           colors: subscription.colors || false,
           showLabelAsIcon: subscription.showLabelAsIcon || false,
@@ -55,7 +55,9 @@ Module.register("MMM-MQTT", {
           average: false,
           pastValues: [],
           animationSpeed: this.config.animationSpeed,
-        });
+        };
+        fetchedData.value = this.convertValue(fetchedData);
+        this.fetchedData.push(fetchedData);
       });
 
       this.addBroker(broker.url, broker.port, broker.auth, broker.topics);
@@ -103,12 +105,12 @@ Module.register("MMM-MQTT", {
       return wrapper;
     }
 
-    // // If no message has been received yet
-    // if (this.fetchedData.every((element) => element.value === null)) {
-    //   wrapper.innerHTML = this.translate("NO_MESSAGE");
-    //   wrapper.className = "light small dimmed";
-    //   return wrapper;
-    // }
+    // If no message has been received yet
+    if (this.fetchedData.every((element) => element.value === null)) {
+      wrapper.innerHTML = this.translate("NO_MESSAGE");
+      wrapper.className = "light small dimmed";
+      return wrapper;
+    }
 
     // Sort fetched data based on their position value
     this.fetchedData.sort((a, b) => {
@@ -116,7 +118,12 @@ Module.register("MMM-MQTT", {
     });
 
     this.fetchedData.forEach((subscription) => {
-      // Subscription wrapper
+      // If there is a topic for which no value is currently received since the start of the mirror,
+      if (subscription.value === null) {
+        // skip this entry.
+        return;
+      } // Subscription wrapper
+
       const subscriptionWrapper = document.createElement("tr");
       subscriptionWrapper.className = "subscription";
 
@@ -273,8 +280,7 @@ Module.register("MMM-MQTT", {
    * @returns {object} The converted value as object (?)
    */
   convertValue: function (subscription) {
-    let subscriptionValue = subscription.value;
-    Log.debug("Converting value from: " + subscriptionValue);
+    let subscriptionValue = subscription.value ?? "UNDEFINED";
 
     // If conversion should be done
     if (subscription.conversion) {
@@ -284,6 +290,7 @@ Module.register("MMM-MQTT", {
         if (
           subscription.value.trim() == subscription.conversion[i].from.trim()
         ) {
+          Log.debug("Converting value from: " + subscriptionValue);
           Log.debug("to: " + subscription.conversion[i].to);
           // set the current value to its subscription value.
           subscriptionValue = subscription.conversion[i].to;
@@ -292,6 +299,8 @@ Module.register("MMM-MQTT", {
       }
     }
 
-    return subscriptionValue;
+    return subscription.value === null && subscriptionValue == "UNDEFINED"
+      ? null
+      : subscriptionValue;
   },
 });
