@@ -281,6 +281,7 @@ Module.register("MMM-MQTT", {
    */
   convertValue: function (subscription) {
     let subscriptionValue = subscription.value ?? "UNDEFINED";
+    Log.log("Converting value from: " + subscriptionValue);
 
     // If conversion should be done
     if (subscription.conversion) {
@@ -290,7 +291,6 @@ Module.register("MMM-MQTT", {
         if (
           subscription.value.trim() == subscription.conversion[i].from.trim()
         ) {
-          Log.log("Converting value from: " + subscriptionValue);
           Log.log("to: " + subscription.conversion[i].to);
           // set the current value to its subscription value.
           subscriptionValue = subscription.conversion[i].to;
@@ -299,7 +299,7 @@ Module.register("MMM-MQTT", {
       }
     }
 
-    return subscription.value === null && subscriptionValue == "UNDEFINED"
+    return subscription.value == null && subscriptionValue == "UNDEFINED"
       ? null
       : subscriptionValue;
   },
