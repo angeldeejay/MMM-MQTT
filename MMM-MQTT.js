@@ -61,10 +61,10 @@ Module.register("MMM-MQTT", {
       this.addBroker(broker.url, broker.port, broker.auth, broker.topics);
     });
 
+    self.updateDom(self.config.animationSpeed);
     setTimeout(function () {
       if (!self.loaded) {
         self.loaded = true;
-        self.updateDom(self.config.animationSpeed);
       }
     }, self.config.animationSpeed + 300);
   },
