@@ -93,11 +93,11 @@ Module.register("MMM-MQTT", {
     wrapper.className = "wrapper";
     wrapper.id = "wrapper";
 
-    if (!this.loaded) {
-      wrapper.innerHTML = this.translate("LOADING");
-      wrapper.className = "light small dimmed";
-      return wrapper;
-    }
+    // if (!this.loaded) {
+    //   wrapper.innerHTML = this.translate("LOADING");
+    //   wrapper.className = "light small dimmed";
+    //   return wrapper;
+    // }
 
     // If no subscriptions were defined in the config file
     if (this.fetchedData.length === 0) {
