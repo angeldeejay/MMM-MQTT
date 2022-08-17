@@ -219,7 +219,7 @@ Module.register("MMM-MQTT", {
         this.config.animationSpeed = 0; //this.fetchedData[i].animationSpeed
       }
       // Update the received value
-      this.fetchedData[i].value = receivedData.payload ?? "UNDEFINED";
+      this.fetchedData[i].value = receivedData.payload;
       // and convert it according to the specified factor and offset value
       this.fetchedData[i].value = this.convertValue(this.fetchedData[i]);
 
