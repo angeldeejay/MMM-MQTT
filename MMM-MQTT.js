@@ -17,7 +17,6 @@ Module.register("MMM-MQTT", {
   start: function () {
     Log.info("Starting module: " + this.name);
     const self = this;
-    this.loaded = false;
     this.fetchedData = [];
 
     this.config.mqttBrokers.forEach((mqttBroker) => {
@@ -57,7 +56,6 @@ Module.register("MMM-MQTT", {
           animationSpeed: this.config.animationSpeed,
         };
         fetchedData.value = this.convertValue(fetchedData);
-        Log.info(fetchedData);
         this.fetchedData.push(fetchedData);
       });
 
@@ -65,11 +63,6 @@ Module.register("MMM-MQTT", {
     });
 
     this.updateDom(self.config.animationSpeed);
-    setTimeout(function () {
-      if (!self.loaded) {
-        self.loaded = true;
-      }
-    }, self.config.animationSpeed + 300);
   },
 
   // Define required styles.
@@ -92,12 +85,6 @@ Module.register("MMM-MQTT", {
     const wrapper = document.createElement("table");
     wrapper.className = "wrapper";
     wrapper.id = "wrapper";
-
-    // if (!this.loaded) {
-    //   wrapper.innerHTML = this.translate("LOADING");
-    //   wrapper.className = "light small dimmed";
-    //   return wrapper;
-    // }
 
     // If no subscriptions were defined in the config file
     if (this.fetchedData.length === 0) {
@@ -170,7 +157,6 @@ Module.register("MMM-MQTT", {
   // Override socket notification handler.
   socketNotificationReceived: function (notification, payload) {
     if (notification == "DATA") {
-      this.loaded = true;
       // Update data set with received data
       this.updateData(payload);
       // Update dom with given animation speed.
@@ -282,7 +268,6 @@ Module.register("MMM-MQTT", {
    */
   convertValue: function (subscription) {
     let subscriptionValue = subscription.value ?? "UNDEFINED";
-    Log.log("Converting value from: " + subscriptionValue);
 
     // If conversion should be done
     if (subscription.conversion) {
@@ -293,6 +278,7 @@ Module.register("MMM-MQTT", {
           `${subscriptionValue}`.trim() ==
           `${subscription.conversion[i].from}`.trim()
         ) {
+          Log.log("Converting value from: " + subscriptionValue);
           Log.log("to: " + subscription.conversion[i].to);
           // set the current value to its subscription value.
           return subscription.conversion[i].to;
