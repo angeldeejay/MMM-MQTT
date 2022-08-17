@@ -42,7 +42,7 @@ Module.register("MMM-MQTT", {
           topic: subscription.topic,
           label: subscription.label || "",
           suffix: subscription.suffix || "",
-          value: null,
+          value: "UNDEFINED",
           time: Date.now(),
           colors: subscription.colors || false,
           showLabelAsIcon: subscription.showLabelAsIcon || false,
@@ -116,7 +116,6 @@ Module.register("MMM-MQTT", {
     });
 
     this.fetchedData.forEach((subscription) => {
-      subscription.value = subscription.value ?? "UNDEFINED";
       // Subscription wrapper
       const subscriptionWrapper = document.createElement("tr");
       subscriptionWrapper.className = "subscription";
