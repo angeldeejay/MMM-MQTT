@@ -293,14 +293,11 @@ Module.register("MMM-MQTT", {
         ) {
           Log.log("to: " + subscription.conversion[i].to);
           // set the current value to its subscription value.
-          subscriptionValue = subscription.conversion[i].to;
-          break;
+          return subscription.conversion[i].to;
         }
       }
     }
 
-    return subscription.value == null && subscriptionValue == "UNDEFINED"
-      ? null
-      : subscriptionValue;
+    return subscriptionValue == "UNDEFINED" ? null : subscriptionValue;
   },
 });
