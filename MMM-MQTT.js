@@ -290,7 +290,8 @@ Module.register("MMM-MQTT", {
       for (let i = 0; i < subscription.conversion.length; i++) {
         // If the current value is equal to a conversion value,
         if (
-          subscription.value.trim() == subscription.conversion[i].from.trim()
+          `${subscription.value}`.trim() ==
+          `${subscription.conversion[i].from}`.trim()
         ) {
           Log.log("to: " + subscription.conversion[i].to);
           // set the current value to its subscription value.
