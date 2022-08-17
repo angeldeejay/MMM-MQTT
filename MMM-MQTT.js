@@ -116,6 +116,7 @@ Module.register("MMM-MQTT", {
     });
 
     this.fetchedData.forEach((subscription) => {
+      subscription.value = subscription.value ?? "UNDEFINED";
       // Subscription wrapper
       const subscriptionWrapper = document.createElement("tr");
       subscriptionWrapper.className = "subscription";
@@ -142,8 +143,7 @@ Module.register("MMM-MQTT", {
       const valueWrapper = document.createElement("td");
       valueWrapper.className = "value align-right bright";
       valueWrapper.style.color = colors.value;
-      valueWrapper.innerHTML =
-        subscription.value ?? this.convertValue("UNDEFINED");
+      valueWrapper.innerHTML = subscription.value;
       subscriptionWrapper.appendChild(valueWrapper);
 
       // Suffix
