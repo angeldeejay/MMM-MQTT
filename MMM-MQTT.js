@@ -36,7 +36,7 @@ Module.register("MMM-MQTT", {
       );
 
       // Create initialized objects for each topic of each subscription the broker.
-      mqttBroker.subscriptions.map((subscription) => {
+      mqttBroker.subscriptions.forEach((subscription) => {
         let fetchedData = {
           broker: broker.url,
           topic: subscription.topic,
@@ -57,6 +57,7 @@ Module.register("MMM-MQTT", {
           animationSpeed: this.config.animationSpeed,
         };
         fetchedData.value = this.convertValue(fetchedData);
+        Log.info(fetchedData);
         this.fetchedData.push(fetchedData);
       });
 
