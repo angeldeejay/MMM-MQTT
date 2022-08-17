@@ -103,12 +103,12 @@ Module.register("MMM-MQTT", {
       return wrapper;
     }
 
-    // If no message has been received yet
-    if (this.fetchedData.every((element) => element.value === null)) {
-      wrapper.innerHTML = this.translate("NO_MESSAGE");
-      wrapper.className = "light small dimmed";
-      return wrapper;
-    }
+    // // If no message has been received yet
+    // if (this.fetchedData.every((element) => element.value === null)) {
+    //   wrapper.innerHTML = this.translate("NO_MESSAGE");
+    //   wrapper.className = "light small dimmed";
+    //   return wrapper;
+    // }
 
     // Sort fetched data based on their position value
     this.fetchedData.sort((a, b) => {
@@ -142,7 +142,8 @@ Module.register("MMM-MQTT", {
       const valueWrapper = document.createElement("td");
       valueWrapper.className = "value align-right bright";
       valueWrapper.style.color = colors.value;
-      valueWrapper.innerHTML = subscription.value ?? "UNDEFINED";
+      valueWrapper.innerHTML =
+        subscription.value ?? this.convertValue("UNDEFINED");
       subscriptionWrapper.appendChild(valueWrapper);
 
       // Suffix
