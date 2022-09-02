@@ -6,10 +6,18 @@
  */
 
 .MMM-MQTT .label {
-    padding-right: 50px;
-    vertical-align: middle;
+  padding-right: 1rem;
+  vertical-align: middle;
 }
 
 .MMM-MQTT .value {
-    padding-right: 20px;
+  vertical-align: middle;
+  font-size: 1.25rem;
+}
+
+.MMM-MQTT .suffix {
+  font-weight: normal;
+  padding-left: 0.25rem;
+  vertical-align: super;
+  font-size: 0.8rem;
 }

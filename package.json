@@ -1,4 +1,10 @@
 {
+  "name": "MMM-MQTT",
+  "version": "1.0.0",
+  "description": "Fork of jupadin's MagicMirror module MMM-MQTT (https://github.com/jupadin/MMM-MQTT)",
+  "main": "MMM-MatrixRainBackground.js",
+  "author": "Andrés Vanegas",
+  "license": "MIT",
   "dependencies": {
     "mqtt": "^4.3.4"
   }

@@ -18,16 +18,16 @@ Module.register("MMM-MQTT", {
     Log.info("Starting module: " + this.name);
     const self = this;
     this.fetchedData = [];
+    this.config = { ...this.defaults, ...this.config };
 
     this.config.mqttBrokers.forEach((mqttBroker) => {
-      const broker = {};
-      // broker.url = broker.url.replace("http://", "mqtt://");
-      broker.url =
-        (mqttBroker.url.match(/^mqtts?:\/\//) ? "" : "mqtt://") +
-        mqttBroker.url;
-      broker.port = mqttBroker.port || self.config.port;
-      broker.auth = mqttBroker.auth;
-      broker.topics = [];
+      const broker = {
+        url: (mqttBroker.url.match(/^mqtts?:\/\//) ? "" : "mqtt://") + mqttBroker.url,
+        port: mqttBroker.port || self.config.port,
+        auth: mqttBroker.auth,
+        topics: [],
+      };
+
       broker.topics.push(
         ...mqttBroker.subscriptions
           .map((sub) => sub.topic)
@@ -77,7 +77,7 @@ Module.register("MMM-MQTT", {
 
   // Define header.
   getHeader: function () {
-    return this.config.header;
+    return this.data.header || this.config.header;
   },
 
   // Override dom generator.
@@ -93,25 +93,12 @@ Module.register("MMM-MQTT", {
       return wrapper;
     }
 
-    // If no message has been received yet
-    if (this.fetchedData.every((element) => element.value === null)) {
-      wrapper.innerHTML = this.translate("NO_MESSAGE");
-      wrapper.className = "light small dimmed";
-      return wrapper;
-    }
-
     // Sort fetched data based on their position value
     this.fetchedData.sort((a, b) => {
       return a.position - b.position;
     });
 
     this.fetchedData.forEach((subscription) => {
-      // If there is a topic for which no value is currently received since the start of the mirror,
-      if (subscription.value === null) {
-        // skip this entry.
-        return;
-      } // Subscription wrapper
-
       const subscriptionWrapper = document.createElement("tr");
       subscriptionWrapper.className = "subscription";
 
@@ -137,15 +124,21 @@ Module.register("MMM-MQTT", {
       const valueWrapper = document.createElement("td");
       valueWrapper.className = "value align-right bright";
       valueWrapper.style.color = colors.value;
-      valueWrapper.innerHTML = subscription.value;
+      if (subscription.value !== null && subscription.value !== undefined && `${subscription.value}`.trim() !== '') {
+        valueWrapper.innerHTML = subscription.value;
+      } else {
+        valueWrapper.innerHTML = this.translate('LOADING');
+      }
       subscriptionWrapper.appendChild(valueWrapper);
 
       // Suffix
-      const suffixWrapper = document.createElement("td");
-      suffixWrapper.className = "suffix align-left";
-      suffixWrapper.style.color = colors.suffix;
-      suffixWrapper.innerHTML = subscription.suffix;
-      subscriptionWrapper.appendChild(suffixWrapper);
+      if (subscription.value !== null && subscription.value !== undefined && `${subscription.value}`.trim() !== '') {
+        const suffixWrapper = document.createElement("span");
+        suffixWrapper.className = "suffix align-left dimmed";
+        suffixWrapper.style.color = colors.suffix;
+        suffixWrapper.innerHTML = subscription.suffix;
+        valueWrapper.appendChild(suffixWrapper);
+      }
 
       wrapper.appendChild(subscriptionWrapper);
     });
@@ -187,10 +180,18 @@ Module.register("MMM-MQTT", {
   updateData: function (receivedData) {
     for (let i = 0; i < this.fetchedData.length; i++) {
       let savedData = this.fetchedData[i];
-      // if (!(receivedData.url === savedData.url) || !(this.matchTopics(receivedData.topic, savedData.topic))) {
+      const wildcard = savedData.topic.indexOf("*") !== -1;
+      const topicRegex = new RegExp('^' +
+        (wildcard ?
+          savedData.topic
+            .replace(/[.+?^${}()|[\]\\]/ig, '\\$&')
+            .replace(/\*/ig, '.*') :
+          savedData.topic
+            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) +
+        '$');
       if (
-        !(receivedData.url === savedData.url) ||
-        !(receivedData.topic === savedData.topic)
+        receivedData.url !== savedData.url ||
+        !topicRegex.test(receivedData.topic)
       ) {
         continue;
       }
@@ -268,6 +269,7 @@ Module.register("MMM-MQTT", {
    */
   convertValue: function (subscription) {
     let subscriptionValue = subscription.value ?? "UNDEFINED";
+    Log.debug("Converting value from: " + subscriptionValue);
 
     // If conversion should be done
     if (subscription.conversion) {
@@ -278,12 +280,28 @@ Module.register("MMM-MQTT", {
           `${subscriptionValue}`.trim() ==
           `${subscription.conversion[i].from}`.trim()
         ) {
-          Log.log("Converting value from: " + subscriptionValue);
-          Log.log("to: " + subscription.conversion[i].to);
+          Log.debug("to: " + subscription.conversion[i].to);
           // set the current value to its subscription value.
           return subscription.conversion[i].to;
         }
       }
+    }
+
+    if (!isNaN(subscriptionValue)) {
+      if (subscription.factor && typeof subscription.factor === "number") {
+        Log.debug("with a factor of: " + subscription.factor);
+        subscriptionValue *= subscription.factor;
+      }
+
+      if (subscription.offset && typeof subscription.factor === "number") {
+        Log.debug("with an offset of: " + subscription.offset);
+        subscriptionValue += subscription.offset;
+      }
+      Log.debug("over: " + subscriptionValue);
+
+      // Round subscriptionValue to given number of decimals
+      subscriptionValue = (Math.round(subscriptionValue * 100) / 100).toFixed(subscription.decimals);
+      Log.debug("to its final value of (with " + subscription.decimals + " decimals): " + subscriptionValue);
     }
 
     return subscriptionValue == "UNDEFINED" ? null : subscriptionValue;
